@@ -8,16 +8,17 @@ terraform {
 }
 
 provider "aws" {
-  region     = "us-east-1"
-  access_key = "AKIASXCDLIAGM7VSTN3C"
-  secret_key = "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"
+  region = "us-east-1"
 }
+
 
 
 resource "aws_glue_catalog_database" "data" {
     name = "mydatabase"
   
 }
+
+
 resource "aws_iam_role" "my-role" {
  name = "my-role"
 
@@ -50,26 +51,37 @@ resource "aws_iam_role_policy" "my-policy" {
 resource "aws_glue_job" "example" {
   name     = "example"
   role_arn = "arn:aws:iam::186972323852:role/service-role/AWSGlueServiceRole-Etl"
+glue_version = "3.0"
+  worker_type = "G.1X"
+  number_of_workers = "10"
+
+  
+  
+
+  
 
   command {
     script_location = "s3://fifadataforetl/code.py"
+    python_version = "3"
   }
+  
+
+
 }
 
 
 
-    resource "aws_glue_crawler" "example" {
+    resource "aws_glue_crawler" "democrawler" {
   database_name = aws_glue_catalog_database.data.name
-  name          = "example"
+  name          = "democrawler"
   role          =  "arn:aws:iam::186972323852:role/service-role/AWSGlueServiceRole-Etl"
+  
+
   
   s3_target {
     path = "s3://fifadataforetl/terraform/data.csv"
   }
 
-  provisioner "local-exec" {
-    command = "aws glue start-crawler --name example"
-  }
 }
 
   
