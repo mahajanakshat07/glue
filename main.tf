@@ -19,37 +19,10 @@ resource "aws_glue_catalog_database" "data" {
 }
 
 
-resource "aws_iam_role" "my-role" {
- name = "my-role"
-
- assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy" "my-policy" {
- name = "my-policy"
- role = aws_iam_role.my-role.id
- policy = "${file("hello.json")}"
 
 
- # This policy is exclusively available by my-role.
-}
-
-resource "aws_glue_job" "example" {
-  name     = "example"
+resource "aws_glue_job" "version1" {
+  name     = "version1"
   role_arn = "arn:aws:iam::186972323852:role/service-role/AWSGlueServiceRole-Etl"
 glue_version = "3.0"
   worker_type = "G.1X"
@@ -75,7 +48,9 @@ glue_version = "3.0"
   database_name = aws_glue_catalog_database.data.name
   name          = "democrawler"
   role          =  "arn:aws:iam::186972323852:role/service-role/AWSGlueServiceRole-Etl"
-  
+  schedule = "cron(*/5 * * * ? *)"
+  type     = "SCHEDULED"
+
 
   
   s3_target {
@@ -84,4 +59,12 @@ glue_version = "3.0"
 
 }
 
-  
+  resource "aws_glue_trigger" "trigger2" {
+  name     = "example"
+  schedule = "cron(*/5 * * * ? *)"
+  type     = "SCHEDULED"
+
+  actions {
+    job_name = aws_glue_job.version1.name
+  }
+}
